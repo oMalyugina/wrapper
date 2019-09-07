@@ -22,10 +22,11 @@ class LogRegWrapper(Wrapper):
         X = self._handling_missed_value(X)
         X = self._normalized(X)
         X = self._feature_selection(X)
+        return X
 
     def fit(self, X, y):
         X = self._preprossecing_X(X)
-        self.model.fit(X.values, y)
+        self.model.fit(X, y)
 
     def predict(self, X):
         self.predict(X)
