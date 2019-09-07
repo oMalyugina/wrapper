@@ -6,6 +6,7 @@ class Wrapper:
 
     @abstractmethod
     def __init__(self):
+        self.model = None
         pass
 
     @abstractmethod
