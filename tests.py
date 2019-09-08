@@ -6,15 +6,26 @@ from pandas.testing import assert_frame_equal
 import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning)  # uncomment if you want to avoid warnings
-#TODO вынести тесты в отдельные классы по функциям
 
-class TestWrapper(unittest.TestCase):
 
+class TestPreprocessor(unittest.TestCase):
     def test_missed_data(self):
         lg = LogRegWrapper()
         X = pd.DataFrame([[-4, 1], [0.4, 2], [40, None], [4, 23]], columns=['obj', 'numbers'])
         X_expected = pd.DataFrame([[-4, 1], [0.4, 2], [40, -1], [4, 23]], columns=['obj', 'numbers'])
         assert_frame_equal(lg._preprocessor._handling_missed_value(X), X_expected, check_dtype=False)
+
+    def test_label_encoder(self):
+        lg = LogRegWrapper()
+        X_train = pd.DataFrame(['a', 'v', 'c', 'v'], columns=['obj'], dtype='object')
+        X_test = pd.DataFrame(['f', 'v', 'c', 'u'], columns=['obj'], dtype='object')
+        lg._preprocessor.fit_transform(X_train)
+        X_test_res = lg._preprocessor.transform(X_test)
+        X_test_expected = pd.DataFrame([-1, 2, 3, -1], columns=['obj'], dtype='int')
+        assert_frame_equal(X_test_expected, X_test_res, check_dtype=False)
+
+
+class TestWrapper(unittest.TestCase):
 
     def test_no_pretrained_predict(self):
         lg = LogRegWrapper()
@@ -27,16 +38,6 @@ class TestWrapper(unittest.TestCase):
     def test_no_pretrained_evaluate(self):
         lg = LogRegWrapper()
         self.assertRaises(Exception, lg.evaluate, self.X, self.y)
-
-    def test_label_encoder(self):
-        lg = LogRegWrapper()
-        X_train = pd.DataFrame(['a', 'v', 'c', 'v'], columns=['obj'], dtype='object')
-        y_train = [1, 1, 0, 0]
-        X_test = pd.DataFrame(['f', 'v', 'c', 'u'], columns=['obj'], dtype='object')
-        y_test = [1, 1, 0, 1]
-        lg.fit(X_train, y_train)
-        lg.evaluate(X_test, y_test)
-        # TODO сделать ассерт на нужные выходные данные
 
     def test_reprodusible(self):
         lg1 = LogRegWrapper()
