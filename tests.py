@@ -1,9 +1,12 @@
-from wrapper.concrete_wrapper import LogRegWrapper
+from wrapper.LogRegWrapper import LogRegWrapper
 import unittest
 import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
+import warnings
 
+warnings.filterwarnings("ignore", category=FutureWarning)  # uncomment if you want to avoid warnings
+#TODO вынести тесты в отдельные классы по функциям
 
 class TestWrapper(unittest.TestCase):
 
@@ -11,24 +14,19 @@ class TestWrapper(unittest.TestCase):
         lg = LogRegWrapper()
         X = pd.DataFrame([[-4, 1], [0.4, 2], [40, None], [4, 23]], columns=['obj', 'numbers'])
         X_expected = pd.DataFrame([[-4, 1], [0.4, 2], [40, -1], [4, 23]], columns=['obj', 'numbers'])
-        assert_frame_equal(lg._handling_missed_value(X), X_expected, check_dtype=False)
+        assert_frame_equal(lg._preprocessor._handling_missed_value(X), X_expected, check_dtype=False)
 
-    def test_exceptions(self):
+    def test_no_pretrained_predict(self):
         lg = LogRegWrapper()
-        with self.assertRaises(Exception) as cm:
-            lg.predict(self.X)
-        the_exception = cm.exception
-        self.assertEqual(str(the_exception), "model wasn't trained")
+        self.assertRaises(Exception, lg.predict, self.X)
+
+    def test_no_pretrained_predict_proba(self):
         lg = LogRegWrapper()
-        with self.assertRaises(Exception) as cm:
-            lg.predict_proba(self.X)
-        the_exception = cm.exception
-        self.assertEqual(str(the_exception), "model wasn't trained")
+        self.assertRaises(Exception, lg.predict_proba, self.X)
+
+    def test_no_pretrained_evaluate(self):
         lg = LogRegWrapper()
-        with self.assertRaises(Exception) as cm:
-            lg.evaluate(self.X, self.y)
-        the_exception = cm.exception
-        self.assertEqual(str(the_exception), "model wasn't trained")
+        self.assertRaises(Exception, lg.evaluate, self.X, self.y)
 
     def test_label_encoder(self):
         lg = LogRegWrapper()
@@ -38,14 +36,17 @@ class TestWrapper(unittest.TestCase):
         y_test = [1, 1, 0, 1]
         lg.fit(X_train, y_train)
         lg.evaluate(X_test, y_test)
+        # TODO сделать ассерт на нужные выходные данные
 
     def test_reprodusible(self):
         lg1 = LogRegWrapper()
         lg1.fit(self.X, self.y)
         res1 = lg1.predict_proba(self.X)
+
         lg2 = LogRegWrapper()
         lg2.fit(self.X, self.y)
         res2 = lg2.predict_proba(self.X)
+
         np.testing.assert_equal(res1, res2)
 
     def test_output_format_fit(self):
@@ -55,33 +56,39 @@ class TestWrapper(unittest.TestCase):
     def test_output_format_predict(self):
         lg = LogRegWrapper()
         lg.fit(self.X, self.y)
-        self.assertIsInstance(lg.predict(self.X), np.ndarray)
-        self.assertEqual(self.y.shape, lg.predict(self.X).shape)
-        self.assertSetEqual(set(lg.predict(self.X)), {0, 1})
+        y_pred = lg.predict(self.X)
+
+        self.assertIsInstance(y_pred, np.ndarray)
+        self.assertEqual(y_pred.shape, lg.predict(self.X).shape)
+        self.assertSetEqual(set(y_pred), {0, 1})
 
     def test_output_format_predict_proba(self):
         lg = LogRegWrapper()
         lg.fit(self.X, self.y)
-        self.assertIsInstance(lg.predict_proba(self.X), np.ndarray)
-        self.assertEqual(self.y.shape[0], lg.predict_proba(self.X).shape[0])
-        self.assertEqual(len(set(self.y)), lg.predict_proba(self.X).shape[1])
+        y_pred = lg.predict_proba(self.X)
+
+        self.assertIsInstance(y_pred, np.ndarray)
+        self.assertEqual(self.y.shape[0], y_pred.shape[0])
+        self.assertEqual(len(set(self.y)), y_pred.shape[1])
 
     def test_output_format_evaluate(self):
         lg = LogRegWrapper()
         lg.fit(self.X, self.y)
+        res = lg.evaluate(self.X, self.y)
 
-        self.assertIsInstance(lg.evaluate(self.X, self.y), dict)
-        self.assertIn('f1_score', lg.evaluate(self.X, self.y))
-        self.assertIn('logloss', lg.evaluate(self.X, self.y))
+        self.assertIsInstance(res, dict)
+        self.assertIn('f1_score', res)
+        self.assertIn('logloss', res)
 
     def test_output_format_tume_parametrs(self):
         lg = LogRegWrapper()
+        res = lg.tune_parameters(self.X, self.y)
 
-        self.assertIsInstance(lg.tune_parameters(self.X, self.y), dict)
-        self.assertIn('scores', lg.tune_parameters(self.X, self.y))
-        self.assertIsInstance(lg.tune_parameters(self.X, self.y)['scores'], dict)
-        self.assertIn('f1_score', lg.tune_parameters(self.X, self.y)['scores'])
-        self.assertIn('logloss', lg.tune_parameters(self.X, self.y)['scores'])
+        self.assertIsInstance(res, dict)
+        self.assertIn('scores', res)
+        self.assertIsInstance(res['scores'], dict)
+        self.assertIn('f1_score', res['scores'])
+        self.assertIn('logloss', res['scores'])
 
     def setUp(self) -> None:
         C1 = np.array([[0., -0.8], [1.5, 0.8]])

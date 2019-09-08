@@ -1,14 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
 
-class Wrapper:
+class IWrapper:
     __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def __init__(self):
-        self._model = None
-        self._trained = False
-        pass
 
     @abstractmethod
     def fit(self, X, y):
