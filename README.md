@@ -1,2 +1,2 @@
 # wrapper
-wrapper for different classes (from keras, sklearn and othes)
+wrapper for different models (from keras, sklearn and othes)
