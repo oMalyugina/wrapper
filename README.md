@@ -15,7 +15,8 @@ in the constructor's parameter in a dictionary.
 
 Usage of the Wrapper you can see in file ```testWrapper.ipynb```
 
-#### Requirements
+#### Run tests
+##### Run tests locally
 To be able to run the project you should have python3.
 
 To install all the required dependencies locally you may run the command:
@@ -24,9 +25,18 @@ pip3 install -r requirements.txt
 ```
 
 
-#### Run tests
+
 All unit tests described in the task can be found in the file ```tests.py```.
 
 You can run it from a terminal with the command: 
 ```
 python -m unittest tests
+```
+
+##### Run tests in Docker
+
+If you have Docker on your computer test can be ran with the next commands:
+```
+docker build -t wrapper-tests .
+docker run --rm wrapper-tests
+```
