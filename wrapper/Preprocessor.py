@@ -1,14 +1,23 @@
 from sklearn.preprocessing import Normalizer
 import category_encoders as ce
+from wrapper.IPreprocessor import IPreprocessor
 
 
-class Preprocessor_X:
+class Preprocessor_X(IPreprocessor):
 
     def __init__(self):
         self._label_encoders = {}
         self._normalizers = {}
         self._missed_ratio_to_delete = 10
         self._trained = False
+
+    def fit(self, X_original):
+        self._trained = False
+        X = X_original.copy()
+        X = self._label_encoding(X)
+        X = self._handling_missed_value(X)
+        X = self._normalized(X)
+        self._trained = True
 
     def fit_transform(self, X_original):
         self._trained = False
@@ -27,6 +36,19 @@ class Preprocessor_X:
         X = self._handling_missed_value(X)
         X = self._normalized(X)
         return X
+
+    def get_params(self) -> dict:
+        if not self._trained:
+            raise Exception("train Preprocessor before getting parameters")
+        params = {}
+        params["missed_ratio_to_delete"] = self._missed_ratio_to_delete
+        for name, encoders_dict in zip(["label_encoding", "normalized"], [self._label_encoders, self._normalizers]):
+            encoders_param = {}
+            for var_name, encoder in encoders_dict:
+                encoders_param[var_name] = encoder.get_params()
+            params[name] = encoders_param
+
+        return params
 
     def _handling_missed_value(self, X):
         all_data_na = (X.isnull().sum() / len(X)) * 100
