@@ -6,40 +6,50 @@ class IWrapper:
 
     @abstractmethod
     def fit(self, X, y) -> None:
-        """train model on given data
+        """Fit the model according to the given training data.
 
-                    Parameters:
-                    X: pandas.DataFrame
-                    y: numpy.array
+        Parameters:
+        X: pandas.DataFrame, shape (n_samples, n_features)
+        Training vector, where n_samples is the number of samples and
+            n_features is the number of features.
+        y: numpy.array, shape (n_samples,)
+            Target vector relative to X.
 
-                    Returns:
-                    None
+        Returns:
+        None
 
-                   """
+       """
         pass
 
     @abstractmethod
     def predict(self, X):
         """predict class for given objects
 
-                    Parameters:
-                    X: pandas.DataFrame
+        Parameters:
+        X: pandas.DataFrame, shape = [n_samples, n_features]
 
-                    Returns:
-                    y: numpy.array
+        Returns:
+        y: numpy.array, shape = [n_samples]
+        Returns the predicted label.
 
-                   """
+
+        """
         pass
 
     @abstractmethod
     def predict_proba(self, X):
-        """predict probability for each class for given objects
+        """Probability estimates.
 
-            Parameters:
-            X: pandas.DataFrame
+        The returned estimates for all classes are ordered by the
+        label of classes.
 
-            Returns:
-            y: numpy.array
+        Parameters:
+        X: pandas.DataFrame, shape = [n_samples, n_features]
+
+        Returns:
+        y: numpy.array, shape = [n_samples, n_classes]
+        Returns the probability of the sample for each class in the model,
+        where classes are ordered as they are in ``self.classes_``.
 
            """
 
@@ -48,14 +58,16 @@ class IWrapper:
     @abstractmethod
     def evaluate(self, X, y):
 
-        """predict class for given objects and compute quality
+        """Returns the score (f1 and log_loss) on the given test data and labels.
 
         Parameters:
-        X: pandas.DataFrame
-        y: numpy.array
+        X: pandas.DataFrame, shape = (n_samples, n_features)
+            Test samples.
+        y: numpy.array, shape = (n_samples,)
+            True labels for X.
 
         Returns:
-            scores: dict
+            scores: dict containing "f1_score" and "logloss" keys
 
 
        """
@@ -64,14 +76,16 @@ class IWrapper:
 
     @abstractmethod
     def tune_parameters(self, X, y):
-        """tune parameters of classifier
+        """find the best parameters for given data and fit model with the parameters
 
-        Parameters:
-        X: pandas.DataFrame
-        y: numpy.array
+        X: pandas.DataFrame, shape (n_samples, n_features)
+        Training vector, where n_samples is the number of samples and
+            n_features is the number of features.
+        y: numpy.array, shape (n_samples,)
+            Target vector relative to X.
 
         Returns:
-            best parameters and average scores: dict
+            results: dict containing best parameters and average scores
 
 
        """

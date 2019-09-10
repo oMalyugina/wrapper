@@ -55,16 +55,15 @@ class LogRegWrapper(IWrapper):
                            refit='accuracy')
         clf.fit(X, y)
         self._model = clf.best_estimator_
-        res = clf.best_estimator_.get_params()
+        results = clf.best_estimator_.get_params()
         cv_res = pd.DataFrame(clf.cv_results_)
         scores = {'f1_score': cv_res['mean_test_f1'].mean(), 'logloss': cv_res['mean_test_neg_log_loss'].mean()}
-        res['scores'] = scores
+        results['scores'] = scores
         self._trained = True
-        return res
+        return results
 
 
 if __name__ == '__main__':
-    # TODO создать инструкцию как запускать
     path_to_data = '../DR_Demo_Lending_Club_reduced.csv'
     data = pd.read_csv(path_to_data)
     y = data.is_bad.values
