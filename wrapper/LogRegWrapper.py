@@ -19,7 +19,6 @@ class LogRegWrapper(IWrapper):
         self._trained = False
 
     def fit(self, X, y) -> None:
-        # TODO написать докстринги
         self._trained = False
         X = self._preprocessor.fit_transform(X)
         self._model.fit(X, y)
@@ -36,28 +35,33 @@ class LogRegWrapper(IWrapper):
     def evaluate(self, X, y):
         X = self._preprocessor.transform(X)
         y_pred = self.predict(X)
-        return {'f1_score': f1_score(y, y_pred), 'logloss': log_loss(y, y_pred)}
+        return {'f1_score': f1_score(y, y_pred, average="macro"), 'logloss': log_loss(y, y_pred)}
 
     def tune_parameters(self, X, y):
+        # It is a poor implementation.
+        # With additional time I would implement GridSearchCV by my own or looking for better version.
+        # Now it doesn't work with all possible parameters' combinations
+        # (for example combination l1 regularisation and newton-cg isn't possible and creates exception).
         self._trained = False
         X = self._preprocessor.fit_transform(X)
-        # TODO подумать как сделать полный перебор парамервов
-        tuned_parameters = {  # 'tol': [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.5, 1], 'C': [0.1, 0.5, 1, 5, 10],
+        tuned_parameters = {  # 'tol': [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.5, 1],
+            'C': [0.1, 0.5, 1, 3, 5, 10],
             # 'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
-            'max_iter': [2, 5, 10, 100, 1000]}
+            # 'max_iter': [2, 5, 10, 100, 1000]
+        }
 
         # tuned_parameters = {'penalty': ('l1', 'l2', 'elasticnet', 'none'), 'dual': [False, True],
         #                     'tol': [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 0.5, 1], 'C': [0.1, 0.5, 1, 5, 10],
         #                     'fit_intercept': [True, False],
         #                     'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
         #                     'max_iter': [100, 1000, 2000, 5000]}
-        clf = GridSearchCV(self._model, tuned_parameters, cv=5, iid=True, scoring=['accuracy', 'f1', 'neg_log_loss'],
-                           refit='accuracy')
+        clf = GridSearchCV(self._model, tuned_parameters, cv=5, iid=True, scoring=['accuracy', 'f1_macro', 'neg_log_loss'],
+                           refit='f1_macro')
         clf.fit(X, y)
         self._model = clf.best_estimator_
         results = clf.best_estimator_.get_params()
         cv_res = pd.DataFrame(clf.cv_results_)
-        scores = {'f1_score': cv_res['mean_test_f1'].mean(), 'logloss': cv_res['mean_test_neg_log_loss'].mean()}
+        scores = {'f1_score': cv_res['mean_test_f1_macro'].mean(), 'logloss': cv_res['mean_test_neg_log_loss'].mean()}
         results['scores'] = scores
         self._trained = True
         return results
@@ -68,6 +72,6 @@ if __name__ == '__main__':
     data = pd.read_csv(path_to_data)
     y = data.is_bad.values
     X = data.drop('is_bad', axis=1)
-    X.head()
     lg = LogRegWrapper()
     lg.fit(X, y)
+    lg.evaluate(X, y)
