@@ -40,3 +40,14 @@ If you have Docker on your computer test can be ran with the next commands:
 docker build -t wrapper-tests .
 docker run --rm wrapper-tests
 ```
+
+#### Short-Answer Portion
+
+1. I will recommend a logistic regression. 
+Firstly, the model more tractable. 
+You can define weight as features' influence (if data was normalized).
+Secondly, a neural network can be overfitted with larger probability.
+If we have the same quality using simpler model is better.
+
+2. In my opinion, the easiest way is using logistic regression weights like an analog of correlation.
+And they can visualize the forest's trees.
