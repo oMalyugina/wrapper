@@ -57,7 +57,6 @@ class IWrapper:
 
     @abstractmethod
     def evaluate(self, X, y):
-
         """Returns the score (f1 and log_loss) on the given test data and labels.
 
         Parameters:

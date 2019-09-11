@@ -55,7 +55,8 @@ class LogRegWrapper(IWrapper):
         #                     'fit_intercept': [True, False],
         #                     'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
         #                     'max_iter': [100, 1000, 2000, 5000]}
-        clf = GridSearchCV(self._model, tuned_parameters, cv=5, iid=True, scoring=['accuracy', 'f1_macro', 'neg_log_loss'],
+        clf = GridSearchCV(self._model, tuned_parameters, cv=5, iid=True,
+                           scoring=['accuracy', 'f1_macro', 'neg_log_loss'],
                            refit='f1_macro')
         clf.fit(X, y)
         self._model = clf.best_estimator_
